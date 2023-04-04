@@ -1,4 +1,4 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import './App.css'
 
 export default function App() {
@@ -12,6 +12,7 @@ export default function App() {
 	const [possibleToClick, setPossibleToClick] = useState(true);
 	const [winner, setWinner] = useState(null);
 	const [lineType, setLineType] = useState(null);
+	const [redLineOpacity, setRedLineOpacity] = useState(1);
 
 	function LRRow({vertical}) {
 		let redLineIndex;
@@ -42,7 +43,8 @@ export default function App() {
 					margin: 0,
 					marginTop: '-9em',
 					position: 'absolute',
-					width: '100%',
+					width: '97.55%',
+					opacity: redLineOpacity,
 				}}/>
 			)}
 		</div>
@@ -54,7 +56,6 @@ export default function App() {
 			if (!possibleToClick) {
 				return;
 			}
-			console.log('click');
 			// set0X(nextTurn === 'X' ? '0' : 'X')
 
 			if (!ttt[vertical][horizontal]) {
@@ -76,7 +77,6 @@ export default function App() {
 			// horizontal
 			for (let iLine in [0, 1, 2]) {
 				const line = ttt[iLine].join('');
-				// console.log(iLine, line);
 				if (line === 'OOO') {
 					setPossibleToClick(false);
 					setWinner('O')
@@ -92,7 +92,6 @@ export default function App() {
 			// vertical
 			for (let iCol in [0, 1, 2]) {
 				const line = [0, 1, 2].map(iLine => ttt[iLine][iCol]).join('');
-				// console.log(iCol, line);
 				if (line === 'OOO') {
 					setPossibleToClick(false);
 					setWinner('O');
@@ -107,16 +106,28 @@ export default function App() {
 
 			// diagonal 1
 			const line = [0, 1, 2].map(i => ttt[i][i]).join('');
-			// console.log(line);
-			if (line === 'OOO' || line === 'XXX') {
+			if (line === 'OOO') {
 				setPossibleToClick(false);
+				setWinner('O');
+				setLineType('D1');
+			}
+			if (line === 'XXX') {
+				setPossibleToClick(false);
+				setWinner('X');
+				setLineType('D1');
 			}
 
 			// diagonal 2
 			const line2 = [[0, 2], [1, 1], [2, 0]].map(([x, y]) => ttt[y][x]).join('');
-			console.log(line2);
-			if (line2 === 'OOO' || line2 === 'XXX') {
+			if (line2 === 'OOO') {
 				setPossibleToClick(false);
+				setWinner('O');
+				setLineType('D2');
+			}
+			if (line2 === 'XXX') {
+				setPossibleToClick(false);
+				setWinner('X');
+				setLineType('D2');
 			}
 		}
 
@@ -160,6 +171,28 @@ export default function App() {
 		redLinePos = Number(lineType.split('')[1]);
 	}
 
+	const redLineWidth = 'solid 10px red';
+
+	const [dateTime, setDateTime] = useState(new Date());
+	useEffect(() => {
+		if (lineType) {
+			const id = setInterval(() => setDateTime(new Date()), 650);
+			return () => {
+				clearInterval(id);
+			}
+		}
+	}, [lineType]);
+
+	useEffect(() => {
+		if (lineType) {
+			if (redLineOpacity === 1) {
+				setRedLineOpacity(0);
+			} else {
+				setRedLineOpacity(1);
+			}
+		}
+	}, [lineType, dateTime]);
+
 
 	return (<div>
 			<div style={{display: 'flex', justifyContent: 'space-between'}}>
@@ -167,13 +200,18 @@ export default function App() {
 					fontSize: '20pt',
 					fontFamily: 'DejaVu Sans',
 				}}
-				>Next Turn: <X0>{nextTurn}</X0></div>
+				     onClick={() => console.table(ttt)}
+				>Next Turn:{' '}
+					{!winner && (
+						<X0>{nextTurn}</X0>
+					)}
+				</div>
 				{winner && (
 					<div style={{
 						fontSize: '20pt',
 						fontFamily: 'DejaVu Sans',
 					}}
-					>Winner: <X0>{winner}</X0></div>
+					><X0>{winner}</X0> Won</div>
 				)}
 			</div>
 			<div className="App" style={{userSelect: 'none'}}>
@@ -186,13 +224,40 @@ export default function App() {
 
 					{redLinePos >= 0 && (
 						<hr style={{
-							border: 'solid 10px red',
+							border: redLineWidth,
 							margin: 0,
 							marginTop: '-26em',
 							marginLeft: (-17.50 + (redLinePos * 16.9)) + 'em',
 							position: 'absolute',
 							width: '100%',
 							transform: 'rotate(90deg)',
+							opacity: redLineOpacity,
+						}}/>
+					)}
+
+					{lineType === 'D1' && (
+						<hr style={{
+							border: redLineWidth,
+							margin: 0,
+							marginTop: '-26em',
+							marginLeft: '-8.4em',
+							position: 'absolute',
+							width: '130%',
+							transform: 'rotate(45deg)',
+							opacity: redLineOpacity,
+						}}/>
+					)}
+
+					{lineType === 'D2' && (
+						<hr style={{
+							border: redLineWidth,
+							margin: 0,
+							marginTop: '-26em',
+							marginLeft: '-8.13em',
+							position: 'absolute',
+							width: '130%',
+							transform: 'rotate(-45deg)',
+							opacity: redLineOpacity,
 						}}/>
 					)}
 				</div>
