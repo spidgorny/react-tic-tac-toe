@@ -10,21 +10,41 @@ export default function App() {
 	];
 	const [ttt, setTTT] = useState(initialGame);
 	const [possibleToClick, setPossibleToClick] = useState(true);
+	const [winner, setWinner] = useState(null);
+	const [lineType, setLineType] = useState(null);
 
 	function LRRow({vertical}) {
-		return <div style={{display: 'flex', fontSize: '13em'}}>
-			<Cell horizontal={0} vertical={vertical}>
-				{ttt[vertical][0]}
-			</Cell>
-			<Cell horizontal={1} vertical={vertical} style={{
-				borderLeft: 'solid 1px silver',
-				borderRight: 'solid 1px silver'
-			}}>
-				{ttt[vertical][1]}
-			</Cell>
-			<Cell horizontal={2} vertical={vertical}>
-				{ttt[vertical][2]}
-			</Cell>
+		let redLineIndex;
+		if (lineType) {
+			let lineTypeSplit = lineType.split('');
+			if (lineTypeSplit[0] === 'H') {
+				redLineIndex = Number(lineTypeSplit[1]);
+			}
+		}
+		return <div style={{position: 'relative'}}>
+			<div style={{display: 'flex', fontSize: '13em'}}>
+				<Cell horizontal={0} vertical={vertical}>
+					{ttt[vertical][0]}
+				</Cell>
+				<Cell horizontal={1} vertical={vertical} style={{
+					borderLeft: 'solid 1px silver',
+					borderRight: 'solid 1px silver'
+				}}>
+					{ttt[vertical][1]}
+				</Cell>
+				<Cell horizontal={2} vertical={vertical}>
+					{ttt[vertical][2]}
+				</Cell>
+			</div>
+			{vertical === redLineIndex && (
+				<hr style={{
+					border: 'solid 10px red',
+					margin: 0,
+					marginTop: '-9em',
+					position: 'absolute',
+					width: '100%',
+				}}/>
+			)}
 		</div>
 	}
 
@@ -57,8 +77,15 @@ export default function App() {
 			for (let iLine in [0, 1, 2]) {
 				const line = ttt[iLine].join('');
 				// console.log(iLine, line);
-				if (line === 'OOO' || line === 'XXX') {
+				if (line === 'OOO') {
 					setPossibleToClick(false);
+					setWinner('O')
+					setLineType('H' + iLine);
+				}
+				if (line === 'XXX') {
+					setPossibleToClick(false);
+					setWinner('X');
+					setLineType('H' + iLine);
 				}
 			}
 
@@ -66,8 +93,15 @@ export default function App() {
 			for (let iCol in [0, 1, 2]) {
 				const line = [0, 1, 2].map(iLine => ttt[iLine][iCol]).join('');
 				// console.log(iCol, line);
-				if (line === 'OOO' || line === 'XXX') {
+				if (line === 'OOO') {
 					setPossibleToClick(false);
+					setWinner('O');
+					setLineType('V' + iCol);
+				}
+				if (line === 'XXX') {
+					setPossibleToClick(false);
+					setWinner('X');
+					setLineType('V' + iCol);
 				}
 			}
 
@@ -117,22 +151,51 @@ export default function App() {
 		setTTT(initialGame);
 		setPossibleToClick(true);
 		set0X('X');
+		setWinner(null);
+		setLineType(null);
 	}
 
+	let redLinePos;
+	if (lineType && lineType.split('')[0] === 'V') {
+		redLinePos = Number(lineType.split('')[1]);
+	}
+
+
 	return (<div>
-			<div style={{display: 'flex', justifyContent: 'start'}}>
+			<div style={{display: 'flex', justifyContent: 'space-between'}}>
 				<div style={{
 					fontSize: '20pt',
 					fontFamily: 'DejaVu Sans',
 				}}
 				>Next Turn: <X0>{nextTurn}</X0></div>
+				{winner && (
+					<div style={{
+						fontSize: '20pt',
+						fontFamily: 'DejaVu Sans',
+					}}
+					>Winner: <X0>{winner}</X0></div>
+				)}
 			</div>
 			<div className="App" style={{userSelect: 'none'}}>
-				<LRRow vertical={0}></LRRow>
-				<Line/>
-				<LRRow vertical={1}></LRRow>
-				<Line/>
-				<LRRow vertical={2}></LRRow>
+				<div style={{position: 'relative'}}>
+					<LRRow vertical={0}></LRRow>
+					<Line/>
+					<LRRow vertical={1}></LRRow>
+					<Line/>
+					<LRRow vertical={2}></LRRow>
+
+					{redLinePos >= 0 && (
+						<hr style={{
+							border: 'solid 10px red',
+							margin: 0,
+							marginTop: '-26em',
+							marginLeft: (-17.50 + (redLinePos * 16.9)) + 'em',
+							position: 'absolute',
+							width: '100%',
+							transform: 'rotate(90deg)',
+						}}/>
+					)}
+				</div>
 
 				<div style={{display: 'flex', justifyContent: 'end'}}>
 					<button onClick={reset}>
